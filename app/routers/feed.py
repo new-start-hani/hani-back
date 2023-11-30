@@ -1,10 +1,10 @@
 import os
 from datetime import datetime
-from fastapi import APIRouter, HTTPException, Depends, status, Response
+from fastapi import APIRouter, HTTPException, Depends, Query, status, Response
 from app.models import Comments, Posts, Users
 from database import SessionLocal
 from datetime import timedelta
-from typing import Dict, Union
+from typing import Dict, Optional, Union
 from dotenv import load_dotenv
 load_dotenv()  # .env 파일을 활성화
 
@@ -16,14 +16,20 @@ router = APIRouter(
 )
 
 # 해당 카테고리 모든 피드 확인
-@router.get("/{hobby}", status_code=status.HTTP_200_OK)
+@router.get("/", status_code=status.HTTP_200_OK)
 def hobby_feed(
-    hobby: str,
+    # hobby: Union[str, None],
+    hobby: Optional[str] = Query(None, description="hobby category"),
+    # hobby: str | None = None,
     payload: Dict[str, Union[str, timedelta]] = Depends(get_current_user)
     ):
 
     db = SessionLocal()
-    feeds = db.query(Posts).filter(Posts.category == hobby).all()
+    if hobby:
+        feeds = db.query(Posts).filter(Posts.category == hobby).all()
+    else:
+        feeds = db.query(Posts).all()
+
     db.close()
 
     return {"message": f"This is {hobby} category page", "data": feeds}
