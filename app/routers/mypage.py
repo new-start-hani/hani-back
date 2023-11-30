@@ -1,13 +1,13 @@
 import os
 from datetime import datetime
 import uuid
-from fastapi import APIRouter, Form, HTTPException, Depends, UploadFile, status, Response
+from fastapi import APIRouter, File, Form, HTTPException, Depends, UploadFile, status, Response
 from app.funcs.check_token import get_current_user
 from app.funcs.hash_password import HashPassword
 from app.models import Users
 from database import SessionLocal
 from datetime import timedelta
-from typing import Dict, Union
+from typing import Annotated, Dict, List, Optional, Union
 from dotenv import load_dotenv
 load_dotenv()  # .env 파일을 활성화
 
@@ -27,7 +27,7 @@ def get_mypage(
 
 @router.put("/", status_code=status.HTTP_200_OK)
 async def change_myinfo(
-    profile_image: UploadFile = Form(None),
+    profile_image: UploadFile = File(None),
     password: str = Form(None),
     hobby: str = Form(None),
     nickname: str = Form(None),
@@ -40,6 +40,7 @@ async def change_myinfo(
     # 프로필 이미지 변경시 이미지 저장
     # 이전 이미지 삭제 코드 추가 필요!!
     if profile_image:
+        print("########", profile_image.filename)
         current_directory = os.getcwd()
         content = await profile_image.read()
         filename = f"{str(uuid.uuid4())}.jpg"  # uuid로 유니크한 파일명으로 변경
